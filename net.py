@@ -375,14 +375,14 @@ def get_blocks(num_layers):
     return blocks
 
 
-class Backbone(Module):
+class BackboneMod(Module):
     def __init__(self, input_size, num_layers, mode="ir"):
         """Args:
-        input_size: input_size of backbone
-        num_layers: num_layers of backbone
+        input_size: input_size of BackboneMod
+        num_layers: num_layers of BackboneMod
         mode: support ir or irse
         """
-        super(Backbone, self).__init__()
+        super(BackboneMod, self).__init__()
         assert input_size[0] in [
             112,
             224,
@@ -460,69 +460,69 @@ class Backbone(Module):
 
 def IR_18(input_size):
     """Constructs a ir-18 model."""
-    model = Backbone(input_size, 18, "ir")
+    model = BackboneMod(input_size, 18, "ir")
 
     return model
 
 
 def IR_34(input_size):
     """Constructs a ir-34 model."""
-    model = Backbone(input_size, 34, "ir")
+    model = BackboneMod(input_size, 34, "ir")
 
     return model
 
 
 def IR_50(input_size):
     """Constructs a ir-50 model."""
-    model = Backbone(input_size, 50, "ir")
+    model = BackboneMod(input_size, 50, "ir")
 
     return model
 
 
 def IR_101(input_size):
     """Constructs a ir-101 model."""
-    model = Backbone(input_size, 100, "ir")
+    model = BackboneMod(input_size, 100, "ir")
 
     return model
 
 
 def IR_152(input_size):
     """Constructs a ir-152 model."""
-    model = Backbone(input_size, 152, "ir")
+    model = BackboneMod(input_size, 152, "ir")
 
     return model
 
 
 def IR_200(input_size):
     """Constructs a ir-200 model."""
-    model = Backbone(input_size, 200, "ir")
+    model = BackboneMod(input_size, 200, "ir")
 
     return model
 
 
 def IR_SE_50(input_size):
     """Constructs a ir_se-50 model."""
-    model = Backbone(input_size, 50, "ir_se")
+    model = BackboneMod(input_size, 50, "ir_se")
 
     return model
 
 
 def IR_SE_101(input_size):
     """Constructs a ir_se-101 model."""
-    model = Backbone(input_size, 100, "ir_se")
+    model = BackboneMod(input_size, 100, "ir_se")
 
     return model
 
 
 def IR_SE_152(input_size):
     """Constructs a ir_se-152 model."""
-    model = Backbone(input_size, 152, "ir_se")
+    model = BackboneMod(input_size, 152, "ir_se")
 
     return model
 
 
 def IR_SE_200(input_size):
     """Constructs a ir_se-200 model."""
-    model = Backbone(input_size, 200, "ir_se")
+    model = BackboneMod(input_size, 200, "ir_se")
 
     return model

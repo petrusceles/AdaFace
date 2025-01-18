@@ -135,6 +135,7 @@ if __name__ == '__main__':
         'ir101_ms1mv3': ["../pretrained/adaface_ir101_ms1mv3.ckpt", 'ir_101'],
         'ir101_webface4m': ["../pretrained/adaface_ir101_webface4m.ckpt", 'ir_101'],
         'ir101_webface12m': ["../pretrained/adaface_ir101_webface12m.ckpt", 'ir_101'],
+        'ir34_webface4m': ["../pretrained/ir34_webface4m.ckpt", 'ir_34'],
     }
     assert args.model_name in adaface_models
     # load model
