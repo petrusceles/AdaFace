@@ -55,7 +55,7 @@ def eval_IJBS(feat_func,
     has_indice = [1 for template in tester.all_template_list if template.indices is not None]
     len(has_indice)
 
-    # tester.image_paths = np.array([str(p).replace('/media/shiyichu/Data', '/scratch/shiyichu/dataset') for p in tester.image_paths], dtype=np.object)
+    # tester.image_paths = np.array([str(p).replace('/media/shiyichu/Data', '/scratch/shiyichu/dataset') for p in tester.image_paths], dtype=object)
     tester.compare_func = compare_func
     for i, template in tqdm(enumerate(tester.all_template_list)):
         if template.indices is not None:

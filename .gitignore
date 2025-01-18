@@ -9,3 +9,4 @@ validation_ijbs
 *.csv
 result
 scripts/run_debug*
+tinyface_root/

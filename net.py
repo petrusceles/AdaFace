@@ -189,6 +189,11 @@ def _make_divisible(v, divisor, min_value=None):
         new_v += divisor
     return new_v
 
+def hard_sigmoid(x, inplace: bool = False):
+    if inplace:
+        return x.add_(3.).clamp_(0., 6.).div_(6.)
+    else:
+        return F.relu6(x + 3.) / 6.
 
 class SqueezeExcite(nn.Module):
     def __init__(
@@ -317,7 +322,7 @@ class BottleneckIRSE(BottleneckIR):
         self.res_layer.add_module("se_block", SEModule(depth, 16))
 
 
-class Bottleneck(namedtuple("Block", ["in_channel", "depth", "stride", "multi", "se"])):
+class Bottleneck(namedtuple("Block", ["in_channel", "depth", "stride", "extra", "se"])):
     """A named tuple describing a ResNet block."""
 
 
@@ -330,49 +335,61 @@ def get_block(in_channel, depth, num_units, stride=2, extra=False, se=False):
 
 def get_blocks(num_layers):
     if num_layers == 18:
-        blocks = [
+        blocks1 = [
             get_block(in_channel=64, depth=64, num_units=2, extra=True, se=False),
             get_block(in_channel=64, depth=128, num_units=2, extra=True, se=True),
+        ]
+        blocks2 = [
             get_block(in_channel=128, depth=256, num_units=2, extra=False, se=True),
             get_block(in_channel=256, depth=512, num_units=2, extra=False, se=True),
         ]
     elif num_layers == 34:
-        blocks = [
+        blocks1 = [
             get_block(in_channel=64, depth=64, num_units=3, extra=True, se=False),
             get_block(in_channel=64, depth=128, num_units=4, extra=True, se=False),
+        ]
+        blocks2 = [
             get_block(in_channel=128, depth=256, num_units=6, extra=False, se=False),
             get_block(in_channel=256, depth=512, num_units=3, extra=False, se=False),
         ]
     elif num_layers == 50:
-        blocks = [
+        blocks1 = [
             get_block(in_channel=64, depth=64, num_units=3),
             get_block(in_channel=64, depth=128, num_units=4),
+        ]
+        blocks2 = [
             get_block(in_channel=128, depth=256, num_units=14),
             get_block(in_channel=256, depth=512, num_units=3),
         ]
     elif num_layers == 100:
-        blocks = [
+        blocks1 = [
             get_block(in_channel=64, depth=64, num_units=3),
             get_block(in_channel=64, depth=128, num_units=13),
+        ]
+        blocks2 = [
             get_block(in_channel=128, depth=256, num_units=30),
             get_block(in_channel=256, depth=512, num_units=3),
         ]
     elif num_layers == 152:
-        blocks = [
+        blocks1 = [
             get_block(in_channel=64, depth=256, num_units=3),
             get_block(in_channel=256, depth=512, num_units=8),
+        ]
+        blocks2 = [
             get_block(in_channel=512, depth=1024, num_units=36),
             get_block(in_channel=1024, depth=2048, num_units=3),
         ]
     elif num_layers == 200:
-        blocks = [
+        blocks1 = [
             get_block(in_channel=64, depth=256, num_units=3),
             get_block(in_channel=256, depth=512, num_units=24),
+        ]
+        blocks2 = [
             get_block(in_channel=512, depth=1024, num_units=36),
             get_block(in_channel=1024, depth=2048, num_units=3),
         ]
 
-    return blocks
+    return [blocks1,blocks2]
 
 
 class BackboneMod(Module):
@@ -431,13 +448,23 @@ class BackboneMod(Module):
             )
 
         modules = []
-        for block in blocks:
+        last_ch = 0
+        for block in blocks[0]:
             for bottleneck in block:
                 modules.append(
-                    unit_module(
-                        bottleneck.in_channel, bottleneck.depth, bottleneck.stride
-                    )
-                )
+                    unit_module(bottleneck.in_channel, bottleneck.depth,
+                                bottleneck.stride, bottleneck.extra,bottleneck.se))
+                last_ch = bottleneck.depth
+                
+        
+
+        
+        for block in blocks[1]:
+            for bottleneck in block:
+                modules.append(
+                    unit_module(bottleneck.in_channel, bottleneck.depth,
+                                bottleneck.stride, bottleneck.extra,bottleneck.se))
+                last_ch = bottleneck.depth
         self.body = Sequential(*modules)
 
         initialize_weights(self.modules())
@@ -455,7 +482,7 @@ class BackboneMod(Module):
         norm = torch.norm(x, 2, 1, True)
         output = torch.div(x, norm)
 
-        return output, norm
+        return output, norm, x
 
 
 def IR_18(input_size):

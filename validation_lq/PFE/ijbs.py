@@ -280,7 +280,7 @@ class IJBSTest:
         ############ Get Booking Image Templates ################
 
         self.all_template_list = np.array(self.all_template_list).astype(
-            np.object).flatten()
+            object).flatten()
 
     def save(self, filename):
         save_dict = {}
@@ -302,7 +302,7 @@ class IJBSTest:
             with open(image_paths, 'r') as f:
                 lines = f.readlines()
                 image_paths = [x.split('\n')[0] for x in lines]
-        self.image_paths = np.array(image_paths).astype(np.object).flatten()
+        self.image_paths = np.array(image_paths).astype(object).flatten()
 
         path_dict = {}
         temp_dict = {}
@@ -498,7 +498,7 @@ def DIR_FAR(score_mat, label_mat, ranks=[1], FARs=[1.0], get_retrievals=False):
     # Split the matrix for match probes and non-match probes
     # subfix _m: match, _nm: non-match
     # For closed set, we only use the match probes
-    mate_indices = label_mat.astype(np.bool).any(axis=1)
+    mate_indices = label_mat.astype(bool).any(axis=1)
     score_mat_m = score_mat[mate_indices,:]
     label_mat_m = label_mat[mate_indices,:]
     score_mat_nm = score_mat[np.logical_not(mate_indices),:]
@@ -509,7 +509,7 @@ def DIR_FAR(score_mat, label_mat, ranks=[1], FARs=[1.0], get_retrievals=False):
 
     # Find the thresholds for different FARs
     max_score_nm = np.max(score_mat_nm, axis=1)
-    label_temp = np.zeros(max_score_nm.shape, dtype=np.bool)
+    label_temp = np.zeros(max_score_nm.shape, dtype=bool)
     if len(FARs) == 1 and FARs[0] >= 1.0:
         # If only testing closed-set identification, use the minimum score as thrnp.vstack((eshold
         # in case there is no non-mate probes
@@ -521,7 +521,7 @@ def DIR_FAR(score_mat, label_mat, ranks=[1], FARs=[1.0], get_retrievals=False):
 
     # Sort the labels row by row according to scores
     sort_idx_mat_m = np.argsort(score_mat_m, axis=1)[:,::-1]
-    sorted_label_mat_m = np.ndarray(label_mat_m.shape, dtype=np.bool)
+    sorted_label_mat_m = np.ndarray(label_mat_m.shape, dtype=bool)
     sorted_score_mat_m = score_mat_m.copy()
     for row in range(label_mat_m.shape[0]):
         sort_idx = (sort_idx_mat_m[row, :])
@@ -534,7 +534,7 @@ def DIR_FAR(score_mat, label_mat, ranks=[1], FARs=[1.0], get_retrievals=False):
 
     DIRs = np.zeros([len(FARs), len(ranks)], dtype=np.float32)
     FARs = np.zeros([len(FARs)], dtype=np.float32)
-    success = np.ndarray((len(FARs), len(ranks)), dtype=np.object)
+    success = np.ndarray((len(FARs), len(ranks)), dtype=object)
     for i, threshold in enumerate(thresholds):
         for j, rank  in enumerate(ranks):
             score_rank = gt_score_m >= threshold
@@ -558,7 +558,7 @@ def DIR_FAR(score_mat, label_mat, ranks=[1], FARs=[1.0], get_retrievals=False):
 def find_thresholds_by_FAR(score_vec, label_vec, FARs=None, epsilon=1e-8):
     assert len(score_vec.shape)==1
     assert score_vec.shape == label_vec.shape
-    assert label_vec.dtype == np.bool
+    assert label_vec.dtype == bool
     score_neg = score_vec[~label_vec]
     score_neg = np.sort(score_neg)[::-1] # score from high to low
     num_neg = len(score_neg)

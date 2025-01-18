@@ -73,7 +73,7 @@ def display_info(epoch, step, watch_list):
     for item in watch_list.items():
         if type(item[1]) in [float, np.float32, np.float64]:
             sys.stdout.write('   %s: %2.3f' % (item[0], item[1]))
-        elif type(item[1]) in [int, bool, np.int32, np.int64, np.bool]:
+        elif type(item[1]) in [int, bool, np.int32, np.int64, bool]:
             sys.stdout.write('   %s: %d' % (item[0], item[1]))
     sys.stdout.write('\n')
 

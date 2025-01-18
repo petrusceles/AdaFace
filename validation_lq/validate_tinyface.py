@@ -74,7 +74,7 @@ def infer(model, dataloader, use_flip_test, fusion_method):
 
             feature = model(images.to("cuda:0"))
             if isinstance(feature, tuple):
-                feature, norm = feature
+                feature, norm, _ = feature
             else:
                 norm = None
 
@@ -82,7 +82,7 @@ def infer(model, dataloader, use_flip_test, fusion_method):
                 fliped_images = torch.flip(images, dims=[3])
                 flipped_feature = model(fliped_images.to("cuda:0"))
                 if isinstance(flipped_feature, tuple):
-                    flipped_feature, flipped_norm = flipped_feature
+                    flipped_feature, flipped_norm, _ = flipped_feature
                 else:
                     flipped_norm = None
 
@@ -109,8 +109,8 @@ def load_pretrained_model(model_name='ir50'):
     arch = adaface_models[model_name][1]
 
     model = net.build_model(arch)
-    statedict = torch.load(ckpt_path)['state_dict']
-    model_statedict = {key[6:]:val for key, val in statedict.items() if key.startswith('model.')}
+    state_dict = torch.load(ckpt_path)
+    model_statedict = {k.replace('module.', ''): v for k, v in state_dict['state_dict'].items()}
     model.load_state_dict(model_statedict)
     model.eval()
     return model
