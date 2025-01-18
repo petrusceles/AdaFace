@@ -189,11 +189,13 @@ def _make_divisible(v, divisor, min_value=None):
         new_v += divisor
     return new_v
 
+
 def hard_sigmoid(x, inplace: bool = False):
     if inplace:
-        return x.add_(3.).clamp_(0., 6.).div_(6.)
+        return x.add_(3.0).clamp_(0.0, 6.0).div_(6.0)
     else:
-        return F.relu6(x + 3.) / 6.
+        return F.relu6(x + 3.0) / 6.0
+
 
 class SqueezeExcite(nn.Module):
     def __init__(
@@ -346,11 +348,11 @@ def get_blocks(num_layers):
     elif num_layers == 34:
         blocks1 = [
             get_block(in_channel=64, depth=64, num_units=3, extra=True, se=False),
-            get_block(in_channel=64, depth=128, num_units=4, extra=True, se=False),
+            get_block(in_channel=64, depth=128, num_units=4, extra=True, se=True),
         ]
         blocks2 = [
-            get_block(in_channel=128, depth=256, num_units=6, extra=False, se=False),
-            get_block(in_channel=256, depth=512, num_units=3, extra=False, se=False),
+            get_block(in_channel=128, depth=256, num_units=6, extra=False, se=True),
+            get_block(in_channel=256, depth=512, num_units=3, extra=False, se=True),
         ]
     elif num_layers == 50:
         blocks1 = [
@@ -389,7 +391,7 @@ def get_blocks(num_layers):
             get_block(in_channel=1024, depth=2048, num_units=3),
         ]
 
-    return [blocks1,blocks2]
+    return [blocks1, blocks2]
 
 
 class BackboneMod(Module):
@@ -452,18 +454,27 @@ class BackboneMod(Module):
         for block in blocks[0]:
             for bottleneck in block:
                 modules.append(
-                    unit_module(bottleneck.in_channel, bottleneck.depth,
-                                bottleneck.stride, bottleneck.extra,bottleneck.se))
+                    unit_module(
+                        bottleneck.in_channel,
+                        bottleneck.depth,
+                        bottleneck.stride,
+                        bottleneck.extra,
+                        bottleneck.se,
+                    )
+                )
                 last_ch = bottleneck.depth
-                
-        
 
-        
         for block in blocks[1]:
             for bottleneck in block:
                 modules.append(
-                    unit_module(bottleneck.in_channel, bottleneck.depth,
-                                bottleneck.stride, bottleneck.extra,bottleneck.se))
+                    unit_module(
+                        bottleneck.in_channel,
+                        bottleneck.depth,
+                        bottleneck.stride,
+                        bottleneck.extra,
+                        bottleneck.se,
+                    )
+                )
                 last_ch = bottleneck.depth
         self.body = Sequential(*modules)
 
