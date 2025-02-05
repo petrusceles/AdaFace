@@ -13,8 +13,15 @@ class ImageAligner:
 
         self.image_size = image_size
         src = np.array(
-            [[30.2946, 51.6963], [65.5318, 51.5014], [48.0252, 71.7366], [33.5493, 92.3655], [62.7299, 92.2041]],
-            dtype=np.float32)
+            [
+                [30.2946, 51.6963],
+                [65.5318, 51.5014],
+                [48.0252, 71.7366],
+                [33.5493, 92.3655],
+                [62.7299, 92.2041],
+            ],
+            dtype=np.float32,
+        )
         if self.image_size[0] == 112:
             src[:, 0] += 8.0
 
@@ -39,12 +46,20 @@ class ImageAligner:
         tform.estimate(landmark5, self.src)
         M = tform.params[0:2, :]
 
-        img = cv2.warpAffine(img, M, (self.image_size[1], self.image_size[0]), borderValue=0.0)
+        img = cv2.warpAffine(
+            img, M, (self.image_size[1], self.image_size[0]), borderValue=0.0
+        )
         return img
 
 
 class ListDatasetWithAligner(Dataset):
-    def __init__(self, img_list, landmarks, image_size=(112,112), image_is_saved_with_swapped_B_and_R=False):
+    def __init__(
+        self,
+        img_list,
+        landmarks,
+        image_size=(112, 112),
+        image_is_saved_with_swapped_B_and_R=False,
+    ):
         super(ListDatasetWithAligner, self).__init__()
 
         # image_is_saved_with_swapped_B_and_R: correctly saved image should have this set to False
@@ -57,11 +72,14 @@ class ListDatasetWithAligner(Dataset):
         self.img_list = img_list
         self.landmarks = landmarks
         self.transform = transforms.Compose(
-            [transforms.ToTensor(), transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])])
-        
+            [
+                transforms.ToTensor(),
+                transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5]),
+            ]
+        )
+
         self.aligner = ImageAligner(image_size=image_size)
         self.image_is_saved_with_swapped_B_and_R = image_is_saved_with_swapped_B_and_R
-
 
     def __len__(self):
         return len(self.img_list)
@@ -74,7 +92,7 @@ class ListDatasetWithAligner(Dataset):
         img = img[:, :, :3]
 
         if self.image_is_saved_with_swapped_B_and_R:
-            print('check if it really should be on')
+            # print('check if it really should be on')
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         img = self.aligner.align(img, landmark)
@@ -84,7 +102,14 @@ class ListDatasetWithAligner(Dataset):
         return img, idx
 
 
-def prepare_dataloader(img_list, landmarks, batch_size, num_workers=0, image_size=(112,112), image_is_saved_with_swapped_B_and_R=False):
+def prepare_dataloader(
+    img_list,
+    landmarks,
+    batch_size,
+    num_workers=0,
+    image_size=(112, 112),
+    image_is_saved_with_swapped_B_and_R=False,
+):
     # image_is_saved_with_swapped_B_and_R: correctly saved image should have this set to False
     # face_emore/img has images saved with B and G (of RGB) swapped.
     # Since training data loader uses PIL (results in RGB) to read image
@@ -92,10 +117,17 @@ def prepare_dataloader(img_list, landmarks, batch_size, num_workers=0, image_siz
     # But if you want to evaluate on the training data such as face_emore/img (B and G swapped),
     # then you should set image_is_saved_with_swapped_B_and_R=True
 
-    image_dataset = ListDatasetWithAligner(img_list, landmarks, image_size=image_size, image_is_saved_with_swapped_B_and_R=image_is_saved_with_swapped_B_and_R)
-    dataloader = DataLoader(image_dataset,
-                            batch_size=batch_size,
-                            shuffle=False,
-                            drop_last=False,
-                            num_workers=num_workers)
+    image_dataset = ListDatasetWithAligner(
+        img_list,
+        landmarks,
+        image_size=image_size,
+        image_is_saved_with_swapped_B_and_R=image_is_saved_with_swapped_B_and_R,
+    )
+    dataloader = DataLoader(
+        image_dataset,
+        batch_size=batch_size,
+        shuffle=False,
+        drop_last=False,
+        num_workers=num_workers,
+    )
     return dataloader
