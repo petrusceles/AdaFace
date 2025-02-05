@@ -156,7 +156,22 @@ if __name__ == "__main__":
         "ir101_ms1mv3": ["../pretrained/adaface_ir101_ms1mv3.ckpt", "ir_101"],
         "ir101_webface4m": ["../pretrained/adaface_ir101_webface4m.ckpt", "ir_101"],
         "ir101_webface12m": ["../pretrained/adaface_ir101_webface12m.ckpt", "ir_101"],
-        "best_ir34_webface4m_": ["../pretrained/ir34_webface4m.ckpt", "ir_34"],
+        "best_ir34_webface4m_0000dsc_0111se": [
+            "../pretrained/best_ir34_webface4m_0000dsc_0111se.ckpt",
+            "ir_34",
+        ],
+        "best_ir34_webface4m_1100dsc_0111se": [
+            "../pretrained/best_ir34_webface4m_1100dsc_0111se.ckpt",
+            "ir_34",
+        ],
+        "ir34_webface4m_0000dsc_0111se": [
+            "../pretrained/ir34_webface4m_0000dsc_0111se.ckpt",
+            "ir_34",
+        ],
+        "ir34_webface4m_1100dsc_0111se": [
+            "../pretrained/ir34_webface4m_1100dsc_0111se.ckpt",
+            "ir_34",
+        ],
     }
     assert args.model_name in adaface_models
     # load model
