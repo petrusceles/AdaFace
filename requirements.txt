@@ -6,3 +6,5 @@ prettytable
 menpo
 mxnet
 opencv-python
+pandas
+gdown
