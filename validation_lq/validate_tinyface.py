@@ -172,6 +172,14 @@ if __name__ == "__main__":
             "../pretrained/ir34_webface4m_1100dsc_0111se.ckpt",
             "ir_34",
         ],
+        "best_ir20_webface4m_100dsc_0111se": [
+            "../pretrained/best_ir20_webface4m_100dsc_0111se.ckpt",
+            "ir_20",
+        ],
+        "ir20_webface4m_100dsc_0111se": [
+            "../pretrained/ir20_webface4m_100dsc_0111se.ckpt",
+            "ir_34",
+        ],
     }
     assert args.model_name in adaface_models
     # load model

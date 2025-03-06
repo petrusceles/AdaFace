@@ -261,7 +261,7 @@ class BottleneckIR(Module):
 class BasicBlockIR(Module):
     """BasicBlock for IRNet"""
 
-    def __init__(self, in_channel, depth, stride, extra=False, se=False):
+    def __init__(self, in_channel, depth, stride, extra=False, se=False, kernel=3):
         super(BasicBlockIR, self).__init__()
         if in_channel == depth:
             self.shortcut_layer = MaxPool2d(1, stride)
@@ -274,20 +274,35 @@ class BasicBlockIR(Module):
         self.se = se
         self.is_extra = extra
 
+        self.is_extra = extra
+        if in_channel == depth:
+            self.shortcut_layer = MaxPool2d(1, stride)
+        else:
+            self.shortcut_layer = Sequential(
+                Conv2d(in_channel, depth, (1, 1), stride, bias=False),
+                BatchNorm2d(depth),
+            )
+
         if self.is_extra:
-            self.res_layer_1 = Sequential(
+            self.res_layer_1 = nn.Sequential(
+                # depthwise
                 BatchNorm2d(in_channel),
-                DepthwiseSeparableConvolution(
-                    in_channel=in_channel, kernels_per_layer=3, out_channel=depth
+                Conv2d(
+                    in_channel,
+                    in_channel,
+                    kernel_size=kernel,
+                    padding=1,
+                    groups=in_channel,
+                    stride=stride,
+                    bias=False,
                 ),
+                BatchNorm2d(in_channel),
+                PReLU(in_channel),
             )
             self.res_layer_2 = Sequential(
-                DepthwiseSeparableConvolution(
-                    in_channel=depth,
-                    kernels_per_layer=3,
-                    out_channel=depth,
-                    stride=stride,
-                )
+                # pointwise
+                Conv2d(in_channel, depth, kernel_size=1, bias=False),
+                BatchNorm2d(depth),
             )
         else:
             self.res_layer_1 = Sequential(
@@ -316,23 +331,23 @@ class BasicBlockIR(Module):
 class BasicBlockIRSE(BasicBlockIR):
     def __init__(self, in_channel, depth, stride):
         super(BasicBlockIRSE, self).__init__(in_channel, depth, stride)
-        self.res_layer.add_module("se_block", SEModule(depth, 16))
 
 
 class BottleneckIRSE(BottleneckIR):
     def __init__(self, in_channel, depth, stride):
         super(BottleneckIRSE, self).__init__(in_channel, depth, stride)
-        self.res_layer.add_module("se_block", SEModule(depth, 16))
 
 
-class Bottleneck(namedtuple("Block", ["in_channel", "depth", "stride", "extra", "se"])):
+class Bottleneck(
+    namedtuple("Block", ["in_channel", "depth", "stride", "extra", "se", "kernel"])
+):
     """A named tuple describing a ResNet block."""
 
 
-def get_block(in_channel, depth, num_units, stride=2, extra=False, se=False):
+def get_block(in_channel, depth, num_units, stride=2, extra=False, se=False, kernel=3):
 
-    return [Bottleneck(in_channel, depth, stride, extra, se)] + [
-        Bottleneck(depth, depth, 1, extra, False) for i in range(num_units - 1)
+    return [Bottleneck(in_channel, depth, stride, extra, se, kernel)] + [
+        Bottleneck(depth, depth, 1, extra, False, kernel) for i in range(num_units - 1)
     ]
 
 
@@ -346,6 +361,22 @@ def get_blocks(num_layers):
             get_block(in_channel=128, depth=256, num_units=2, extra=False, se=True),
             get_block(in_channel=256, depth=512, num_units=2, extra=False, se=True),
         ]
+    elif num_layers == 20:
+        blocks1 = [
+            get_block(
+                in_channel=64,
+                depth=128,
+                num_units=7,
+                extra=True,
+                se=True,
+                kernel=7,
+                stride=4,
+            ),
+        ]
+        blocks2 = [
+            get_block(in_channel=128, depth=256, num_units=6, extra=False, se=True),
+            get_block(in_channel=256, depth=512, num_units=3, extra=False, se=True),
+        ]
     elif num_layers == 34:
         blocks1 = [
             get_block(in_channel=64, depth=64, num_units=3, extra=True, se=False),
@@ -357,8 +388,8 @@ def get_blocks(num_layers):
         ]
     elif num_layers == 50:
         blocks1 = [
-            get_block(in_channel=64, depth=64, num_units=3),
-            get_block(in_channel=64, depth=128, num_units=4),
+            get_block(in_channel=64, depth=64, num_units=3, extra=True, kernel=3),
+            get_block(in_channel=64, depth=128, num_units=4, extra=True, kernel=3),
         ]
         blocks2 = [
             get_block(in_channel=128, depth=256, num_units=14),
